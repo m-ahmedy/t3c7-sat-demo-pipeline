@@ -18,12 +18,18 @@ jobs:
           name: List build folder
           command: |
             ls build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/build
 
   deploy:
     docker:
       - image: amazon/aws-cli:latest
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/
       - run:
           name: Create New S3 Bucket
           command: |
