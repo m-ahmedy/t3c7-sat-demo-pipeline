@@ -19,7 +19,27 @@ jobs:
           command: |
             ls build
 
+  deploy:
+    docker:
+      - image: amazon/aws-cli:latest
+    steps:
+      - checkout
+      - run:
+          name: Create New S3 Bucket
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/bucket.yml \
+              --stack-name Demo-Website-${CIRCLE_WORKFLOW_ID:0:8} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:8}"
+      - run:
+          name: Upload build folder to bucket
+          command: |
+            aws s3 sync build s3://demo-website-${CIRCLE_WORKFLOW_ID:0:8}
+
 workflows:
   default:
     jobs:
       - build
+      - deploy:
+          requires:
+            - build
